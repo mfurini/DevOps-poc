@@ -25,7 +25,7 @@ pipeline {
             junit(testResults: 'target/test-reports/DevOpsPOCSpec.xml', allowEmptyResults: true)
           }
         }
-        stage('') {
+        stage('Test2') {
           steps {
             sh 'java -version'
           }
