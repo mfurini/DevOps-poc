@@ -16,12 +16,20 @@ pipeline {
       }
     }
     stage('Unit Tests') {
-      steps {
-        echo 'Tests'
-        sh 'sbt clean test'
-        archiveArtifacts 'target/test-reports/*.xml'
-        junit(testResults: 'target/test-reports/DevOpsPOCSpec.xml',
-                allowEmptyResults: true)
+      parallel {
+        stage('Unit Tests') {
+          steps {
+            echo 'Tests'
+            sh 'sbt clean test'
+            archiveArtifacts 'target/test-reports/*.xml'
+            junit(testResults: 'target/test-reports/DevOpsPOCSpec.xml', allowEmptyResults: true)
+          }
+        }
+        stage('') {
+          steps {
+            sh 'java -version'
+          }
+        }
       }
     }
     stage('Build') {
@@ -37,8 +45,8 @@ pipeline {
           if (env.BRANCH_NAME != "master") {
             sh "git checkout ${env.BRANCH_NAME}"
             sh 'source /etc/profile.d/exports.sh &&' +
-                    ' /opt/hub-linux-386-2.3.0-pre10/bin/hub pull-request' +
-                    ' -m "$(git log -1 --pretty=%B)"'
+            ' /opt/hub-linux-386-2.3.0-pre10/bin/hub pull-request' +
+            ' -m "$(git log -1 --pretty=%B)"'
             notifyMessage = "Pull Request Sent"
           }
           else {
@@ -61,9 +69,11 @@ pipeline {
         message += " Commit by <@${author}> (${author}): ``` ${commitMessage} ``` "
         color = '#00CC00'
         slackSend(message: message,
-                baseUrl: 'https://devopshours.slack.com/services/hooks/jenkins-ci/',
-                color: color, token: 'V9qDlvtFvCSU7bbmPEvJjYe8')
+        baseUrl: 'https://devopshours.slack.com/services/hooks/jenkins-ci/',
+        color: color, token: 'V9qDlvtFvCSU7bbmPEvJjYe8')
       }
+      
+      
     }
     
     failure {
@@ -77,9 +87,11 @@ pipeline {
         message += " Commit by <@${author}> (${author}): ``` ${commitMessage} ``` "
         color = '#990000'
         slackSend(message: message,
-                baseUrl: 'https://devopshours.slack.com/services/hooks/jenkins-ci/',
-                color: color, token: 'V9qDlvtFvCSU7bbmPEvJjYe8')
+        baseUrl: 'https://devopshours.slack.com/services/hooks/jenkins-ci/',
+        color: color, token: 'V9qDlvtFvCSU7bbmPEvJjYe8')
       }
+      
+      
     }
     
   }
